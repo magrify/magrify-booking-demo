@@ -36,7 +36,7 @@ export function ProductionAppLayout() {
         </p>
         <p className="mt-1.5 space-x-3">
           <Link to="/about" className="hover:text-stone-600">About</Link>
-          <a href="https://github.com/magrify/magrify-booking-demo" target="_blank" rel="noreferrer" className="hover:text-stone-600">Magrify platform</a>
+          <a href="https://github.com/magrify/magrify-booking-platform" target="_blank" rel="noreferrer" className="hover:text-stone-600">Magrify platform</a>
         </p>
       </>
       </footer>

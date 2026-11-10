@@ -25,7 +25,7 @@ export function extractErrorMessage(error: unknown): string {
   }
   if (!message && error instanceof Error) message = error.message;
   if (message?.includes('JWT_PRIVATE_KEY') || message?.includes('JWKS')) {
-    return 'Staff authentication is not configured on this demo deployment yet.';
+    return 'Staff authentication is not configured on this deployment yet.';
   }
   return message ?? 'Something went wrong. Please try again.';
 }

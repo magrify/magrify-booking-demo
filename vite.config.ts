@@ -27,7 +27,7 @@ const walletIsolation = () => (
   next();
 };
 
-// base is '/' locally and on Cloudflare Pages; the GH Pages demo build
+// base is '/' locally and on Cloudflare Pages.
 // overrides it via VITE_BASE (see .github/workflows/pages.yml).
 export default defineConfig({
   plugins: [
@@ -48,7 +48,7 @@ export default defineConfig({
       closeBundle() {
         if (!productionProfile) return;
         for (const path of [
-          resolve('dist', 'demo'),
+          resolve('dist', 'showcase'),
           resolve('dist', 'wavewalletdk'),
           resolve('dist', 'wavewalletdk-isolated-v1'),
           resolve('dist', '_headers'),

@@ -64,7 +64,7 @@ export function AppLayout() {
             About
           </Link>
           <a
-            href="https://github.com/magrify/magrify-booking-demo"
+            href="https://github.com/magrify/magrify-booking-platform"
             target="_blank"
             rel="noreferrer"
             className="hover:text-stone-600"

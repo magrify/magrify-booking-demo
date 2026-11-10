@@ -101,7 +101,7 @@ export function GuestForm({ value, onChange, maxOccupancy }: GuestFormProps) {
         <span>
           Send me occasional news and offers.
           <span className="mt-1 block text-xs text-stone-500">
-            Consent is recorded with your reservation; this demo does not send marketing campaigns.
+            Consent is recorded with your reservation; marketing campaigns are managed separately.
           </span>
         </span>
       </label>
