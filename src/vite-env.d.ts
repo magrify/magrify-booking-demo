@@ -1,0 +1,18 @@
+/// <reference types="vite/client" />
+
+interface ImportMetaEnv {
+  readonly VITE_MAGRIFY_PROFILE?: string;
+  readonly VITE_CONVEX_URL: string;
+  readonly VITE_PUBLIC_SHOWCASE?: string;
+  readonly VITE_PUBLIC_WAVELENGTH?: string;
+  readonly VITE_PUBLIC_ZAPRITE?: string;
+  readonly VITE_PUBLIC_SIMULATED?: string;
+  readonly VITE_PUBLIC_STAFF?: string;
+  readonly VITE_TURNSTILE_SITE_KEY?: string;
+  readonly VITE_PAYMENT_EDGE_URL?: string;
+  readonly VITE_WAVELENGTH_LOCAL_TREASURY_ADDRESS?: string;
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv;
+}
