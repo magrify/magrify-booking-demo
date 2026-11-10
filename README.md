@@ -4,6 +4,10 @@ Magrify builds the booking and property operations platform for independent shor
 
 Each client deployment is configured for the operator's own property, policies, inventory, payment account, email domain, and branding. The application does not ship with a shared property catalog or fixed client data.
 
+## Magrify resources
+
+Magrify is the product and engineering team behind this platform. Learn more about [booking-ready websites](https://magrify.com/booking-ready-websites/), [hospitality automation](https://magrify.com/hospitality-automation/), and [campground website design](https://magrify.com/campground-website-design/), or [contact Magrify](https://magrify.com/contact/) about a client deployment.
+
 ## Client branding
 
 Set `VITE_CLIENT_NAME` to the property or operating company name. Set `VITE_CLIENT_LOGO` to an image path under `public/` when the client has a logo. Without those variables, the interface uses Magrify as the platform brand.

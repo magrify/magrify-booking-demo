@@ -38,6 +38,16 @@ export function AboutPage() {
           </a>
         </div>
 
+        <div className="mt-6 rounded-xl border border-stone-200 bg-stone-50 p-5">
+          <h2 className="font-display text-lg font-semibold text-stone-900">Resources for operators</h2>
+          <p className="mt-1.5 text-sm leading-6 text-stone-600">
+            Explore Magrify's guidance on{' '}
+            <a className="underline hover:text-stone-900" href="https://magrify.com/booking-ready-websites/" target="_blank" rel="noreferrer">booking-ready websites</a>,{' '}
+            <a className="underline hover:text-stone-900" href="https://magrify.com/hospitality-automation/" target="_blank" rel="noreferrer">hospitality automation</a>, and{' '}
+            <a className="underline hover:text-stone-900" href="https://magrify.com/campground-website-design/" target="_blank" rel="noreferrer">campground website design</a>.
+          </p>
+        </div>
+
         <div className="mt-6 space-y-2 text-sm text-stone-600">
           <p className="flex items-center gap-2">
             <Github className="h-4 w-4" aria-hidden="true" />
