@@ -311,7 +311,7 @@ export function UnitTypePage() {
             {submitError ? <ErrorMessage message={submitError} /> : null}
 
             <button type="button" className="btn-primary w-full" disabled={!canSubmit} onClick={handleSubmit}>
-              {submitting ? 'Holding your dates…' : import.meta.env.VITE_MAGRIFY_DEMO === 'true' ? 'Continue to example checkout' : 'Continue to payment'}
+              {submitting ? 'Holding your dates…' : 'Continue to payment'}
             </button>
           </div>
         </div>

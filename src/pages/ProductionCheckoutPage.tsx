@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { useAction, useMutation, useQuery } from 'convex/react';
+import { useAction, useQuery } from 'convex/react';
 import { Clock, CreditCard } from 'lucide-react';
 
 import { api } from '../../convex/_generated/api';
@@ -29,7 +29,6 @@ export function ProductionCheckoutPage() {
   const providerInfo = useQuery(api.payments.checkout.availableProviders);
   const propertyConfigs = useQuery(api.properties.configList);
   const createCheckoutSession = useAction(api.payments.checkout.createCheckoutSession);
-  const confirmSimulated = useMutation(api.bookings.confirmSimulated);
   const [now, setNow] = useState(() => Date.now());
   const [payingProvider, setPayingProvider] = useState<string | null>(null);
   const [payError, setPayError] = useState<string | null>(null);
@@ -53,20 +52,6 @@ export function ProductionCheckoutPage() {
   const msRemaining = (booking.holdExpiresAt ?? now) - now;
   const expired = msRemaining <= 0;
   const property = propertyConfigs?.[0];
-  const demo = import.meta.env.VITE_MAGRIFY_DEMO === 'true' && providerInfo?.simulatedEnabled;
-  const guestEmail = booking.guestEmail;
-
-  async function completeDemo() {
-    setPayingProvider('simulated');
-    setPayError(null);
-    try {
-      await confirmSimulated({ bookingId: bookingId as Id<'bookings'>, confirmationCode: code, email: guestEmail });
-    } catch (error) {
-      setPayError(extractErrorMessage(error));
-      setPayingProvider(null);
-    }
-  }
-
   async function pay(provider: 'stripe' | 'square' | 'zaprite') {
     setPayingProvider(provider);
     setPayError(null);
@@ -93,7 +78,7 @@ export function ProductionCheckoutPage() {
   return (
     <div className="mx-auto max-w-lg">
       <div className="card p-8">
-        <h1 className="text-2xl font-semibold text-stone-900">{import.meta.env.VITE_MAGRIFY_DEMO === 'true' ? 'Complete example reservation' : 'Complete your booking'}</h1>
+        <h1 className="text-2xl font-semibold text-stone-900">Complete your booking</h1>
         <div className="mt-4 flex items-center gap-2 rounded-lg bg-amber-50 px-4 py-3 text-amber-800">
           <Clock className="h-4 w-4" aria-hidden="true" />
           <span className="text-sm font-medium">{expired ? 'Your hold has expired. Please start over.' : `Dates held for ${formatCountdown(msRemaining)}`}</span>
@@ -106,7 +91,7 @@ export function ProductionCheckoutPage() {
         {booking.priceBreakdown ? <div className="mt-6 border-t border-stone-200 pt-6"><PriceBreakdownView price={booking.priceBreakdown} nights={booking.nights} currency={booking.currency} taxLabel={booking.taxLabel} /></div> : null}
         {holdTooStale ? <div className="mt-4"><ErrorMessage message="There is not enough time left on this hold to start payment. Please rebook for a fresh hold." /><Link to="/" className="btn-secondary mt-3 inline-flex">Start a new booking</Link></div> : null}
         {payError === 'PROVIDER_NOT_CONFIGURED' ? <div className="mt-4"><ErrorMessage message={property ? `Online payment is not configured yet. Please contact ${property.name} at ${property.email} or ${property.phone}.` : 'Online payment is not configured yet. Please contact the property.'} /></div> : payError ? <div className="mt-4"><ErrorMessage message={payError} /></div> : null}
-        {demo ? <div className="mt-6"><p className="mb-3 rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-900">Example reservation only. No real RV site is held and no payment is collected.</p><button type="button" className="btn-primary w-full" disabled={expired || payingProvider !== null} onClick={() => void completeDemo()}>{payingProvider ? 'Completing example…' : 'Complete example reservation'}</button></div> : providerInfo === undefined || propertyConfigs === undefined ? <div className="mt-6"><Spinner label="Loading payment options…" /></div> : providerInfo.providers.length === 0 ? (
+        {providerInfo === undefined || propertyConfigs === undefined ? <div className="mt-6"><Spinner label="Loading payment options…" /></div> : providerInfo.providers.length === 0 ? (
           <p className="mt-6 rounded-lg bg-stone-50 px-4 py-3 text-sm text-stone-600">Online payment is not configured for this property yet.</p>
         ) : (
           <div className={`mt-6 grid gap-3 ${providerInfo.providers.length > 1 ? 'sm:grid-cols-2' : ''}`}>

@@ -44,9 +44,8 @@ export function ProductionConfirmationPage() {
     <div className="mx-auto max-w-lg">
       <div className="card p-8 text-center">
         <PartyPopper className="mx-auto h-10 w-10 text-emerald-700" aria-hidden="true" />
-        <h1 className="mt-3 text-2xl font-semibold text-stone-900">{import.meta.env.VITE_MAGRIFY_DEMO === 'true' ? 'Example reservation complete' : 'You are all booked!'}</h1>
-        {import.meta.env.VITE_MAGRIFY_DEMO === 'true' && <p className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900">This confirmation is for a Magrify demo. It does not reserve a real site and no payment was collected.</p>}
-        <p className="mt-1 text-stone-500">{import.meta.env.VITE_MAGRIFY_DEMO === 'true' ? 'Example code' : 'Confirmation code'} <span className="font-mono font-semibold text-stone-900">{booking.confirmationCode}</span></p>
+        <h1 className="mt-3 text-2xl font-semibold text-stone-900">You are all booked!</h1>
+        <p className="mt-1 text-stone-500">Confirmation code <span className="font-mono font-semibold text-stone-900">{booking.confirmationCode}</span></p>
         <dl className="mt-6 space-y-1 text-left text-sm text-stone-600">
           <div className="flex justify-between"><dt>Stay</dt><dd className="font-medium text-stone-900">{booking.unitTypeName}</dd></div>
           <div className="flex justify-between"><dt>Unit</dt><dd>{booking.unitName}</dd></div>
@@ -54,7 +53,7 @@ export function ProductionConfirmationPage() {
           <div className="flex justify-between"><dt>Check-out</dt><dd>{formatDisplayDate(booking.checkOut)}</dd></div>
         </dl>
         {booking.priceBreakdown ? <div className="mt-6 border-t border-stone-200 pt-6 text-left"><PriceBreakdownView price={booking.priceBreakdown} nights={booking.nights} currency={booking.currency} taxLabel={booking.taxLabel} /></div> : null}
-        <Link to={`/manage/${booking.confirmationCode}`} className="btn-secondary mt-6 inline-flex">{import.meta.env.VITE_MAGRIFY_DEMO === 'true' ? 'Manage example reservation' : 'Manage this booking'}</Link>
+        <Link to={`/manage/${booking.confirmationCode}`} className="btn-secondary mt-6 inline-flex">Manage this booking</Link>
       </div>
     </div>
   );

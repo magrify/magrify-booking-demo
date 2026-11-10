@@ -64,7 +64,6 @@ import type * as treasury from "../treasury.js";
 import type * as treasuryPolicy from "../treasuryPolicy.js";
 import type * as wavelength from "../wavelength.js";
 import type * as wavelengthRewards from "../wavelengthRewards.js";
-import type * as woodlandDemo from "../woodlandDemo.js";
 
 import type {
   ApiFromModules,
@@ -129,7 +128,6 @@ declare const fullApi: ApiFromModules<{
   treasuryPolicy: typeof treasuryPolicy;
   wavelength: typeof wavelength;
   wavelengthRewards: typeof wavelengthRewards;
-  woodlandDemo: typeof woodlandDemo;
 }>;
 
 /**

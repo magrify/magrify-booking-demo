@@ -47,7 +47,7 @@ createRoot(rootElement).render(
             <Route path="/checkout/:bookingId" element={<ProductionCheckoutPage />} />
             <Route path="/confirmation/:code" element={<ProductionConfirmationPage />} />
             <Route path="/manage/:code" element={<ProductionManageBookingPage />} />
-            <Route path="/about" element={import.meta.env.VITE_MAGRIFY_DEMO === 'true' ? <Navigate to="/" replace /> : <AboutPage />} />
+            <Route path="/about" element={<AboutPage />} />
             <Route path="/admin/login" element={<Suspense fallback={<p className="p-8">Loading staff sign-in…</p>}><AdminLoginPage /></Suspense>} />
             <Route path="/admin" element={<Suspense fallback={<p className="p-8">Loading staff console…</p>}><AdminShell /></Suspense>}>
               <Route index element={<Navigate to="/admin/command" replace />} />

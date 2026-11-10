@@ -1,9 +1,8 @@
 import { internalMutation } from './_generated/server';
 import { ConvexError } from 'convex/values';
-import { seedWoodland } from './woodlandDemo';
 
 /**
- * DEMO_MODE nightly reset: wipe all domain tables and re-seed Pinewood Flats.
+ * DEMO_MODE nightly reset for isolated staging deployments.
  * Registered as a cron only when the deployment sets DEMO_MODE=true.
  * Never runs (and refuses to run) on non-demo deployments.
  */
@@ -64,7 +63,6 @@ export const reset = internalMutation({
       const rows = await ctx.db.query(table).collect();
       for (const row of rows) await ctx.db.delete(row._id);
     }
-    await seedWoodland(ctx);
     return { reset: true };
   },
 });

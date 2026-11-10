@@ -10,16 +10,15 @@ export function AboutPage() {
           <h1 className="font-display text-3xl font-semibold text-stone-900">About Magrify</h1>
         </div>
         <p className="text-stone-600">
-          Magrify is an open-source booking engine and property-management system for independent
-          lodging — campgrounds, cabins, glamping, yurts, and small resorts. Guests book in a couple
-          of clicks; operators keep their data in their own deployment; and reservations are
-          double-booking-proof by construction.
+          Magrify builds the booking and property operations platform for independent short term
+          rental owners and hospitality teams. Guests book directly, while operators manage rates,
+          inventory, guests, payments, staff workflows, and channel connections in one system.
         </p>
 
         <div className="mt-6 rounded-xl border border-emerald-200 bg-emerald-50 p-5">
           <h2 className="font-display text-lg font-semibold text-emerald-900">Built by Magrify</h2>
           <p className="mt-1.5 text-sm text-emerald-900/80">
-            Magrify is built and battle-tested in production by{' '}
+            Magrify designs, builds, and supports the platform used by{' '}
             <a
               href="https://magrify.com"
               target="_blank"
@@ -27,9 +26,7 @@ export function AboutPage() {
               className="font-semibold underline hover:text-emerald-950"
             >
               Magrify
-            </a>
-            , a lakeside community hub in Seba Beach, Alberta, Canada — running its own lodge,
-            cabins, geodomes, yurts, and RV park on the same code you're looking at.
+            </a>{' '}and its lodging clients.
           </p>
           <a
             href="https://magrify.com"
@@ -52,7 +49,7 @@ export function AboutPage() {
             >
               Source on GitHub
             </a>{' '}
-            — MIT licensed, contributions welcome.
+            — source maintained by Magrify.
           </p>
           <p className="flex items-center gap-2">
             <ExternalLink className="h-4 w-4" aria-hidden="true" />
