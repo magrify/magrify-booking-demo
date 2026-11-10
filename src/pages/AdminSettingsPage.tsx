@@ -154,7 +154,7 @@ export function AdminSettingsPage() {
           <a href="https://magrify.com" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-emerald-700 underline hover:text-emerald-800">
             magrify.com <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
           </a>
-          <a href="https://github.com/magrify/magrify-booking-demo" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-stone-600 underline hover:text-stone-900">
+          <a href="https://github.com/magrify/magrify-booking-platform" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-stone-600 underline hover:text-stone-900">
             GitHub <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
           </a>
           <a href="https://magrify.com/" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-stone-600 underline hover:text-stone-900">

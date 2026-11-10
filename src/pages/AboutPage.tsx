@@ -42,7 +42,7 @@ export function AboutPage() {
           <p className="flex items-center gap-2">
             <Github className="h-4 w-4" aria-hidden="true" />
             <a
-              href="https://github.com/magrify/magrify-booking-demo"
+              href="https://github.com/magrify/magrify-booking-platform"
               target="_blank"
               rel="noreferrer"
               className="underline hover:text-stone-900"
