@@ -59,7 +59,9 @@ the existing vectorless path intact.
 gateway and scores returned text for expected facts, forbidden cross-property
 leakage, and explicit scope. The response labels itself `live_provider` when a
 provider key is configured and `dry_run` otherwise; dry-run output is wiring
-validation, not a claim of model quality.
+validation, not a claim of model quality. If the provider rejects a request for
+quota or billing, the response is labeled `provider_error` with per-case error
+types instead of silently falling back to a fabricated score.
 
 The service defaults to a safe dry-run when no provider key is configured. It
 never sends outbound messages, publishes content, charges cards, or mutates a

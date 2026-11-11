@@ -180,6 +180,16 @@ def test_model_context_eval_scores_gateway_responses():
     assert result["improvement"] > 0
 
 
+def test_model_context_eval_reports_provider_billing_errors_without_crashing():
+    class FailingGateway:
+        async def complete(self, *, messages, task=None):
+            raise RuntimeError("provider quota")
+
+    result = asyncio.run(evaluate_model_context(FailingGateway()))
+    assert result["mode"] == "provider_error"
+    assert len(result["provider_errors"]) == 4
+
+
 def test_incident_replay_detects_and_recovers_stalled_approval(tmp_path: Path):
     result = replay_stalled_approval(tmp_path / "incident.sqlite3")
     assert result["detected_status"] == "awaiting_approval"

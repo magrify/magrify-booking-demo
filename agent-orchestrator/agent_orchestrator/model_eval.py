@@ -51,24 +51,31 @@ async def evaluate_model_context(gateway: ModelGateway | None = None) -> dict[st
     gateway = gateway or ModelGateway()
     variants = ("baseline", "tenant_scoped_v2")
     results: dict[str, list[dict[str, Any]]] = {variant: [] for variant in variants}
+    provider_errors: list[dict[str, str]] = []
     for variant in variants:
         for case in CASES:
-            response = await gateway.complete(
-                messages=[
-                    {"role": "system", "content": "Answer using only the supplied property context. Never invent availability or payment side effects."},
-                    {"role": "user", "content": render_prompt(case, variant)},
-                ],
-                task="booking",
-            )
-            results[variant].append({"response_preview": str(response)[:500], **score_model_response(case, str(response), variant=variant)})
+            try:
+                response = await gateway.complete(
+                    messages=[
+                        {"role": "system", "content": "Answer using only the supplied property context. Never invent availability or payment side effects."},
+                        {"role": "user", "content": render_prompt(case, variant)},
+                    ],
+                    task="booking",
+                )
+                results[variant].append({"response_preview": str(response)[:500], **score_model_response(case, str(response), variant=variant)})
+            except Exception as error:  # provider billing, quota, or transient failure
+                error_type = type(error).__name__
+                provider_errors.append({"variant": variant, "property_slug": case.property_slug, "error": error_type})
+                results[variant].append({"property_slug": case.property_slug, "quality_score": None, "passed": False, "provider_error": error_type})
     summaries = {
-        variant: round(sum(item["quality_score"] for item in items) / max(len(items), 1), 4)
+        variant: round(sum(item["quality_score"] or 0 for item in items) / max(len(items), 1), 4)
         for variant, items in results.items()
     }
     return {
-        "mode": _provider_mode(),
+        "mode": "provider_error" if provider_errors else _provider_mode(),
         "variants": list(variants),
         "mean_quality": summaries,
         "improvement": round(summaries["tenant_scoped_v2"] - summaries["baseline"], 4),
+        "provider_errors": provider_errors,
         "results": results,
     }
