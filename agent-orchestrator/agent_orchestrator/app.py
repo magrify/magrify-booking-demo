@@ -17,6 +17,7 @@ from .enrichment_worker import process_payload
 from .evaluations import evaluate_workflow_state
 from .prompt_eval import optimize_prompt_context
 from .search_adapters import file_search
+from .model_eval import evaluate_model_context
 
 try:
     import aiosqlite
@@ -154,6 +155,9 @@ class Handler(BaseHTTPRequestHandler):
                 return
             self._json(200, optimize_prompt_context(iterations=iterations))
             return
+        if parsed.path == "/v1/evals/model-context":
+            self._json(200, asyncio.run(evaluate_model_context(gateway)))
+            return
         self._json(404, {"detail": "Not found"})
 
     def do_POST(self) -> None:  # noqa: N802
@@ -233,7 +237,7 @@ class Handler(BaseHTTPRequestHandler):
                 store.finish_run(run_id, status="failed", output={"error": type(error).__name__})
                 self._json(502, {"run_id": run_id, "status": "failed", "detail": "Agent workflow failed after retries"})
                 return
-            output = {"qualification": state.get("qualification"), "discovery": state.get("discovery"), "enrichment": state.get("enrichment"), "research_output": state.get("research_output"), "fit_score": state.get("fit_score"), "approval": state.get("approval"), "reply_classification": state.get("reply_classification"), "meeting": state.get("meeting"), "revenue": state.get("revenue"), "draft": state.get("draft"), "context": state.get("context", []), "status": state.get("status"), "runtime": state.get("runtime")}
+            output = {"qualification": state.get("qualification"), "discovery": state.get("discovery"), "enrichment": state.get("enrichment"), "research_output": state.get("research_output"), "fit_score": state.get("fit_score"), "approval": state.get("approval"), "reply_classification": state.get("reply_classification"), "meeting": state.get("meeting"), "revenue": state.get("revenue"), "draft": state.get("draft"), "context": state.get("context", []), "status": state.get("status"), "action": state.get("action"), "runtime": state.get("runtime")}
             evaluation = evaluate_workflow_state(state)
             store.add_eval(run_id, "deterministic_safety", evaluation["score"], evaluation["passed"], json.dumps(evaluation["checks"], sort_keys=True))
             store.event(run_id, "agent_eval", evaluation)

@@ -16,6 +16,10 @@ approval workflow:
 The test proves state continuity and confirmation persistence. It does not
 claim production traffic, a card charge, or bank-side credit approval.
 
+`python scripts/replay-stalled-approval.py` exercises the incident-response
+path and verifies `awaiting_approval -> confirmed` with an `approval_resumed`
+event. It is a repeatable incident replay, not a fabricated customer incident.
+
 After deployment, `GET /v1/monitoring/reliability` reads the tenant-scoped run
 and event ledger and reports:
 
@@ -28,6 +32,12 @@ and event ledger and reports:
 These metrics are intentionally based on real requests to the orchestrator.
 They remain empty until a deployment receives traffic, which keeps the resume
 honest about what is tested versus what is observed after launch.
+
+`python scripts/run-operator-session.py` drives the HTTP API as an operator: it
+submits an ICP and lead, observes the approval gate, approves draft preparation,
+records deployment milestones, and reads adoption and reliability back. The
+session labels itself `operator_rehearsal`; actual sign-off still requires a
+client event.
 
 ## Prompt and context optimization
 

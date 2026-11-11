@@ -12,6 +12,8 @@ from agent_orchestrator.banking_controls import review_lender_package
 from agent_orchestrator.search_adapters import file_search, vector_search
 from agent_orchestrator.load_test import run_validation_load
 from agent_orchestrator.deepagents_tools import default_deepagents_tools
+from agent_orchestrator.model_eval import evaluate_model_context
+from agent_orchestrator.incident_replay import replay_stalled_approval
 
 
 def test_framework_status_is_safe():
@@ -111,6 +113,8 @@ def test_banking_controls_route_without_making_credit_decisions():
     assert result["status"] == "exception_review"
     assert result["next_step"] == "route_to_human_underwriter"
     assert result["credit_decision"] == "not_made_by_agent"
+    assert result["control_owners"]["regulatory_review"] == "compliance_officer"
+    assert result["audit_event_required"] is True
 
 
 def test_vector_rag_and_file_search_are_tenant_scoped(tmp_path: Path):
@@ -154,6 +158,25 @@ def test_deepagents_research_tools_are_read_only_and_bounded():
     result = tools[1].invoke('{"name":"A","company":"Example","email":"a@example.com","secret":"redact"}')
     assert "outbound_action" in result
     assert "secret" not in result
+
+
+def test_model_context_eval_scores_gateway_responses():
+    class FakeGateway:
+        async def complete(self, *, messages, task=None):
+            return messages[-1]["content"]
+
+    result = asyncio.run(evaluate_model_context(FakeGateway()))
+    assert result["mode"] in {"dry_run", "live_provider"}
+    assert result["mean_quality"]["tenant_scoped_v2"] > result["mean_quality"]["baseline"]
+    assert result["improvement"] > 0
+
+
+def test_incident_replay_detects_and_recovers_stalled_approval(tmp_path: Path):
+    result = replay_stalled_approval(tmp_path / "incident.sqlite3")
+    assert result["detected_status"] == "awaiting_approval"
+    assert result["recovered_status"] == "confirmed"
+    assert result["verified"] is True
+    assert "approval_resumed" in result["events"]
 
 
 def test_cartelbot_pipeline_reaches_approval_and_scores_leads(tmp_path: Path):

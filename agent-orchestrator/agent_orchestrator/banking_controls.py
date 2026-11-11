@@ -11,6 +11,13 @@ from typing import Any
 
 REQUIRED_DOCUMENTS = ("rent_roll", "operating_statement", "inspection_report", "insurance")
 
+CONTROL_OWNERS = {
+    "document_completeness": "operations_analyst",
+    "exception_review": "underwriter",
+    "credit_decision": "human_credit_committee",
+    "regulatory_review": "compliance_officer",
+}
+
 
 def review_lender_package(case: dict[str, Any]) -> dict[str, Any]:
     """Route a lender package to the right human review state."""
@@ -35,4 +42,6 @@ def review_lender_package(case: dict[str, Any]) -> dict[str, Any]:
         "exceptions": exceptions,
         "credit_decision": "not_made_by_agent",
         "regulatory_filing": "not_made_by_agent",
+        "control_owners": CONTROL_OWNERS,
+        "audit_event_required": True,
     }

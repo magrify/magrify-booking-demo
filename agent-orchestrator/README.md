@@ -35,6 +35,12 @@ monitoring math can be checked under contention before a deployment receives
 real traffic. Its output is labeled `synthetic_validation`; it is not a
 production reliability claim.
 
+`python scripts/replay-stalled-approval.py` replays one incident through the
+same event schema: it detects an `awaiting_approval` run, records the operator
+recovery, resumes it, and verifies a persisted `confirmed` state. This is an
+incident-response regression artifact; it is not presented as a customer
+incident.
+
 `GET /v1/evals/prompt-context?iterations=3` runs the deterministic prompt and
 context optimization loop. It compares a baseline prompt with a tenant- and
 property-scoped prompt on fixed cancellation and amenity cases, reports the
@@ -48,6 +54,12 @@ index over structured knowledge rows, while `GET /v1/knowledge/file-search`
 searches only bounded, tenant-specific Markdown, text, JSON, and CSV files when
 `AGENT_FILE_SEARCH_ROOT` is configured. Both adapters are optional and keep
 the existing vectorless path intact.
+
+`GET /v1/evals/model-context` runs the same cases through the configured model
+gateway and scores returned text for expected facts, forbidden cross-property
+leakage, and explicit scope. The response labels itself `live_provider` when a
+provider key is configured and `dry_run` otherwise; dry-run output is wiring
+validation, not a claim of model quality.
 
 The service defaults to a safe dry-run when no provider key is configured. It
 never sends outbound messages, publishes content, charges cards, or mutates a
@@ -205,6 +217,13 @@ recorded by the client deployment.
 `staff_workflow_used`. `GET /v1/monitoring/adoption` reports which milestones
 are actually observed, so the repo distinguishes a shipped demo from real
 adoption instead of implying sign-off.
+
+`python scripts/run-operator-session.py` drives a complete local operator
+rehearsal through the same API: it submits an ICP and lead, observes the
+approval gate, approves draft preparation, records the engagement milestones,
+and reads the resulting adoption and reliability reports. Its output is labeled
+`operator_rehearsal`; it is designed to be rerun against a deployed URL when a
+real operator is available.
 
 ## Banking-controls sandbox
 
