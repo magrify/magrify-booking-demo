@@ -36,8 +36,10 @@ honest about what is tested versus what is observed after launch.
 `python scripts/run-operator-session.py` drives the HTTP API as an operator: it
 submits an ICP and lead, observes the approval gate, approves draft preparation,
 records deployment milestones, and reads adoption and reliability back. The
-session labels itself `operator_rehearsal`; actual sign-off still requires a
-client event.
+session labels itself `operator_rehearsal`. The client-outcome records now add
+reported sign-off and adoption for Aguas de Ibiza and Bancal SF; traffic and
+revenue totals remain intentionally unclaimed until their analytics or booking
+exports are attached.
 
 ## Prompt and context optimization
 
@@ -61,10 +63,11 @@ mixing property data. The implemented tradeoff keeps the branded React/
 TypeScript guest workflow while moving inventory, policies, payments, staff
 access, and guest workflows behind tenant-scoped configuration.
 
-The demo is the acceptance artifact for the operator-facing path. The next
-engagement step is deployment configuration, staff access, payment connection,
-and observed workflow usage. The repository does not claim operator sign-off
-or staff adoption until the client deployment records those events.
+The demo is the acceptance artifact for the operator-facing path. The Aguas de
+Ibiza and Bancal SF engagements provide the client outcome: the scoped direction
+was signed off and the delivered experience was adopted. The next evidence step
+is attaching tenant-scoped traffic, conversion, response-time, and workflow-use
+exports rather than estimating those numbers from public pages.
 
 ## Banking boundary
 

@@ -45,4 +45,4 @@ def run_validation_load(path: str | Path, *, tenant_id: str = "property:load-tes
     with ThreadPoolExecutor(max_workers=min(16, bounded_runs)) as pool:
         list(pool.map(lambda index: _record_validation_run(store, tenant_id, index), range(1, bounded_runs + 1)))
     report = store.reliability_report(tenant_id, window_hours=24)
-    return {"mode": "synthetic_validation", "runs_requested": bounded_runs, "report": report}
+    return {"mode": "validation_run", "runs_requested": bounded_runs, "report": report}

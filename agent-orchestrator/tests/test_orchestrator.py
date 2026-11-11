@@ -39,6 +39,15 @@ def test_data_controls_redact_and_validate():
     assert validate_tenant_id("property:demo") == "property:demo"
 
 
+def test_gateway_bounds_provider_output_tokens(monkeypatch):
+    monkeypatch.setenv("MODEL_MAX_OUTPUT_TOKENS", "99999")
+    assert ModelGateway.max_output_tokens() == 2_000
+    monkeypatch.setenv("MODEL_MAX_OUTPUT_TOKENS", "8")
+    assert ModelGateway.max_output_tokens() == 64
+    monkeypatch.setenv("MODEL_MAX_OUTPUT_TOKENS", "not-a-number")
+    assert ModelGateway.max_output_tokens() == 400
+
+
 def test_booking_graph_requires_configuration_before_side_effects(tmp_path: Path):
     graph = build_workflow(Store(str(tmp_path / "runs.sqlite3")), ModelGateway())
     state = asyncio.run(graph.ainvoke({
@@ -154,7 +163,7 @@ def test_client_outcome_events_count_as_signoff_and_adoption(tmp_path: Path):
 def test_synthetic_load_harness_exercises_reliability_metrics(tmp_path: Path):
     result = run_validation_load(tmp_path / "load.sqlite3", runs=20)
     report = result["report"]
-    assert result["mode"] == "synthetic_validation"
+    assert result["mode"] == "validation_run"
     assert report["observed_runs"] == 20
     assert report["confirmed_runs"] > 0
     assert report["failed_runs"] > 0

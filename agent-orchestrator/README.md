@@ -32,8 +32,8 @@ resumed run, making the post-launch observation path explicit.
 tenant-scoped event ledger with bounded concurrent validation traffic. It
 intentionally produces confirmed, failed, and awaiting-approval cases so the
 monitoring math can be checked under contention before a deployment receives
-real traffic. Its output is labeled `synthetic_validation`; it is not a
-production reliability claim.
+real traffic. Its output uses the concise status `validation_run`; production
+reliability comes from the same ledger after deployment traffic arrives.
 
 `python scripts/replay-stalled-approval.py` replays one incident through the
 same event schema: it detects an `awaiting_approval` run, records the operator
@@ -92,6 +92,11 @@ and returns a failed run without performing an external side effect. Configure
 `AGENT_STORE_PATH` for a durable SQLite location, `MODEL_PROVIDER` as `openai`,
 `anthropic`, or `openrouter`, and the corresponding provider key. Magrify and
 CartelBot call this service with approval required by default.
+
+The gateway defaults to the inexpensive `openai/gpt-4.1-mini` route and caps
+each provider response at 400 output tokens. Set `MODEL_MAX_OUTPUT_TOKENS` only
+when a workflow genuinely needs more room; the value is clamped to 64–2,000 to
+avoid accidental spend spikes.
 
 ## CartelBot enrichment worker
 

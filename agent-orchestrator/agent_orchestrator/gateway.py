@@ -30,7 +30,12 @@ class ModelGateway:
             return self._dry_run(messages, model)
         from openai import AsyncOpenAI
 
-        response = await AsyncOpenAI(api_key=key).chat.completions.create(model=model, messages=messages, temperature=0.2)
+        response = await AsyncOpenAI(api_key=key).chat.completions.create(
+            model=model,
+            messages=messages,
+            temperature=0.2,
+            max_tokens=self.max_output_tokens(),
+        )
         return response.choices[0].message.content or ""
 
     async def _openrouter(self, messages: list[dict[str, str]], model: str) -> str:
@@ -41,7 +46,13 @@ class ModelGateway:
 
         client = AsyncOpenAI(api_key=key, base_url=os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1"))
         try:
-            response = await client.chat.completions.create(model=model, messages=messages, temperature=0.2, extra_headers={"HTTP-Referer": "https://magrify.com", "X-Title": "Magrify CartelBot agent orchestrator"})
+            response = await client.chat.completions.create(
+                model=model,
+                messages=messages,
+                temperature=0.2,
+                max_tokens=self.max_output_tokens(),
+                extra_headers={"HTTP-Referer": "https://magrify.com", "X-Title": "Magrify CartelBot agent orchestrator"},
+            )
             return response.choices[0].message.content or ""
         except Exception:
             if os.getenv("OPENAI_API_KEY"):
@@ -56,8 +67,21 @@ class ModelGateway:
 
         system = "\n".join(message["content"] for message in messages if message["role"] == "system")
         user_messages = [{"role": message["role"], "content": message["content"]} for message in messages if message["role"] != "system"]
-        response = await AsyncAnthropic(api_key=key).messages.create(model=model, max_tokens=800, system=system or None, messages=user_messages)
+        response = await AsyncAnthropic(api_key=key).messages.create(
+            model=model,
+            max_tokens=self.max_output_tokens(),
+            system=system or None,
+            messages=user_messages,
+        )
         return "".join(block.text for block in response.content if getattr(block, "type", None) == "text")
+
+    @staticmethod
+    def max_output_tokens() -> int:
+        """Bound generation cost unless an operator explicitly raises the cap."""
+        try:
+            return max(64, min(int(os.getenv("MODEL_MAX_OUTPUT_TOKENS", "400")), 2_000))
+        except ValueError:
+            return 400
 
     @staticmethod
     def _dry_run(messages: list[dict[str, str]], model: str) -> str:
