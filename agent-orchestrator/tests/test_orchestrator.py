@@ -142,6 +142,15 @@ def test_adoption_report_distinguishes_signoff_and_usage(tmp_path: Path):
     assert report["staff_usage_recorded"] is False
 
 
+def test_client_outcome_events_count_as_signoff_and_adoption(tmp_path: Path):
+    store = Store(str(tmp_path / "client-outcomes.sqlite3"))
+    store.tenant_event("client:aguasdeibiza", "client_signoff", {"domain": "aguasdeibiza.com"})
+    store.tenant_event("client:aguasdeibiza", "client_adoption_observed", {"domain": "aguasdeibiza.com"})
+    report = store.adoption_report("client:aguasdeibiza")
+    assert report["signoff_recorded"] is True
+    assert report["staff_usage_recorded"] is True
+
+
 def test_synthetic_load_harness_exercises_reliability_metrics(tmp_path: Path):
     result = run_validation_load(tmp_path / "load.sqlite3", runs=20)
     report = result["report"]

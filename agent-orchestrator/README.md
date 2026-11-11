@@ -213,10 +213,11 @@ recorded by the client deployment.
 
 `POST /v1/monitoring/adoption/events` records the next engagement milestones:
 `operator_feedback`, `demo_presented`, `operator_signoff`,
-`deployment_configured`, `staff_training_completed`, and
-`staff_workflow_used`. `GET /v1/monitoring/adoption` reports which milestones
-are actually observed, so the repo distinguishes a shipped demo from real
-adoption instead of implying sign-off.
+`client_signoff`, `deployment_configured`, `staff_training_completed`,
+`staff_workflow_used`, and `client_adoption_observed`. `GET
+/v1/monitoring/adoption` reports which milestones are actually observed, so the
+repo distinguishes a shipped demo from real adoption instead of implying
+sign-off.
 
 `python scripts/run-operator-session.py` drives a complete local operator
 rehearsal through the same API: it submits an ICP and lead, observes the

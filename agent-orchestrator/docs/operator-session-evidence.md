@@ -18,3 +18,7 @@ That is a product hypothesis and an operator-rehearsal observation until a
 client records `operator_signoff` and `staff_workflow_used` from an actual
 deployment. The script labels its output `operator_rehearsal` so the evidence
 cannot be mistaken for customer adoption.
+
+For client-reported outcomes, see `docs/client-outcomes.md`. Those records name
+Aguas de Ibiza and Bancal SF as signed-off and adopted client experiences while
+deliberately omitting unverified traffic, revenue, or conversion metrics.

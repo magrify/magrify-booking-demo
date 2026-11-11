@@ -297,9 +297,11 @@ class Handler(BaseHTTPRequestHandler):
                 "operator_feedback",
                 "demo_presented",
                 "operator_signoff",
+                "client_signoff",
                 "deployment_configured",
                 "staff_training_completed",
                 "staff_workflow_used",
+                "client_adoption_observed",
             }
             if event_name not in allowed:
                 self._json(400, {"detail": "unsupported adoption event"})

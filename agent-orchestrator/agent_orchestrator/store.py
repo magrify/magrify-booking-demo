@@ -242,9 +242,11 @@ class Store:
             "operator_feedback",
             "demo_presented",
             "operator_signoff",
+            "client_signoff",
             "deployment_configured",
             "staff_training_completed",
             "staff_workflow_used",
+            "client_adoption_observed",
         }
         events = [row for row in rows if row["name"] in adoption_names]
         counts: dict[str, int] = {}
@@ -255,8 +257,8 @@ class Store:
             "window_hours": bounded_hours,
             "event_counts": counts,
             "observed_adoption_events": len(events),
-            "signoff_recorded": bool(counts.get("operator_signoff")),
-            "staff_usage_recorded": bool(counts.get("staff_workflow_used")),
+            "signoff_recorded": bool(counts.get("operator_signoff") or counts.get("client_signoff")),
+            "staff_usage_recorded": bool(counts.get("staff_workflow_used") or counts.get("client_adoption_observed")),
             "last_adoption_event_at": events[-1]["created_at"] if events else None,
         }
 
