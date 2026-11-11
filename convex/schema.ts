@@ -153,6 +153,27 @@ export default defineSchema({
     channexPropertyId: v.optional(v.string()),
   }).index('by_slug', ['slug']),
 
+  // Tenant-scoped, vectorless property knowledge for phone/chat assistants.
+  // Operators can store FAQs, policies, amenities, and seasonal notes without
+  // introducing a vector database. Retrieval is always constrained to the
+  // requested active property before keyword matching.
+  propertyKnowledge: defineTable({
+    propertyId: v.id('properties'),
+    kind: v.union(
+      v.literal('faq'),
+      v.literal('policy'),
+      v.literal('amenity'),
+      v.literal('seasonal'),
+    ),
+    title: v.string(),
+    content: v.string(),
+    tags: v.array(v.string()),
+    active: v.boolean(),
+    updatedAt: v.number(),
+  })
+    .index('by_property_active', ['propertyId', 'active'])
+    .index('by_property_kind', ['propertyId', 'kind']),
+
   // Per-property rollout switches. Features are additive and disabled until a
   // property explicitly opts in after its acceptance gates pass.
   propertyFeatures: defineTable({
@@ -309,6 +330,57 @@ export default defineSchema({
   })
     .index('by_email', ['propertyId', 'normalizedEmail'])
     .index('by_phone', ['propertyId', 'normalizedPhone']),
+
+  // Pre-booking inquiries are the tenant-scoped handoff between website,
+  // chat, phone, the CRM adapter, and the booking flow. PII stays in Convex;
+  // analytics adapters receive only an opaque inquiry id and funnel fields.
+  inquiries: defineTable({
+    propertyId: v.id('properties'),
+    guestId: v.optional(v.id('guests')),
+    bookingId: v.optional(v.id('bookings')),
+    channel: v.union(v.literal('website'), v.literal('chat'), v.literal('phone')),
+    status: v.union(
+      v.literal('new'),
+      v.literal('qualified'),
+      v.literal('booking_started'),
+      v.literal('converted'),
+      v.literal('closed'),
+    ),
+    name: v.string(),
+    email: v.string(),
+    phone: v.string(),
+    normalizedEmail: v.string(),
+    message: v.string(),
+    checkIn: v.optional(v.string()),
+    checkOut: v.optional(v.string()),
+    adults: v.optional(v.number()),
+    children: v.optional(v.number()),
+    marketingOptIn: v.boolean(),
+    source: v.string(),
+    qualificationNote: v.optional(v.string()),
+    followUpStatus: v.union(v.literal('not_due'), v.literal('scheduled'), v.literal('sent'), v.literal('cancelled'), v.literal('failed')),
+    followUpAttempts: v.number(),
+    followUpDueAt: v.optional(v.number()),
+    followUpError: v.optional(v.string()),
+    deskcommStatus: v.union(v.literal('pending'), v.literal('synced'), v.literal('not_configured'), v.literal('failed')),
+    deskcommAttempts: v.number(),
+    deskcommError: v.optional(v.string()),
+    agentRunId: v.optional(v.string()),
+    agentStatus: v.optional(v.union(
+      v.literal('queued'),
+      v.literal('running'),
+      v.literal('awaiting_approval'),
+      v.literal('approved'),
+      v.literal('rejected'),
+      v.literal('completed'),
+      v.literal('failed'),
+    )),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_property_status', ['propertyId', 'status'])
+    .index('by_property_email', ['propertyId', 'normalizedEmail'])
+    .index('by_followUpDueAt', ['followUpStatus', 'followUpDueAt']),
 
   bookings: defineTable({
     propertyId: v.id('properties'),

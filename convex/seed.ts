@@ -333,6 +333,44 @@ export async function seedPinewoodFlats(ctx: MutationCtx): Promise<void> {
     active: true,
     sortOrder: 2,
   });
+
+  // Structured, vectorless knowledge used by the LiveKit phone concierge in
+  // the isolated test deployment. Operators replace these rows during real
+  // property onboarding; no guest PII is stored here.
+  const knowledge = [
+    {
+      kind: 'policy' as const,
+      title: 'Cancellation policy',
+      content: 'Cabin and RV-site stays receive a full refund when cancelled at least 7 days before arrival, 50% refund 2 to 6 days before arrival, and no refund inside 2 days. Yurt stays receive a full refund at least 3 days before arrival and no refund inside 3 days.',
+      tags: ['cancellation', 'refund', 'policy'],
+    },
+    {
+      kind: 'faq' as const,
+      title: 'Check-in and check-out',
+      content: 'Check-in begins at 16:00 local time and check-out is by 11:00. Staff can provide arrival instructions after a reservation is confirmed.',
+      tags: ['check-in', 'check-out', 'arrival'],
+    },
+    {
+      kind: 'amenity' as const,
+      title: 'RV site hookups',
+      content: 'Full-hookup RV sites include 50-amp power, water, sewer, a fire ring, and a picnic table.',
+      tags: ['rv', 'hookups', 'amenities'],
+    },
+    {
+      kind: 'seasonal' as const,
+      title: 'Peak summer rates',
+      content: 'Lakeview Cabin peak summer pricing applies from June 15 through September 1, with a two-night minimum during that season.',
+      tags: ['summer', 'seasonal', 'rates'],
+    },
+  ];
+  for (const row of knowledge) {
+    await ctx.db.insert('propertyKnowledge', {
+      propertyId,
+      ...row,
+      active: true,
+      updatedAt: Date.now(),
+    });
+  }
 }
 
 /**

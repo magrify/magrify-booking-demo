@@ -34,6 +34,9 @@ export function PropertyPage() {
         <p className="mt-1 text-sm text-stone-400">
           Check-in {property.checkInTime} · Check-out {property.checkOutTime}
         </p>
+        <Link to={`/p/${property.slug}/inquire`} className="btn-secondary mt-5 inline-flex">
+          Ask a question before booking
+        </Link>
       </div>
 
       <h2 className="mb-4 text-xl font-semibold text-stone-900">Places to stay</h2>

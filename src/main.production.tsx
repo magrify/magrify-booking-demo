@@ -13,11 +13,13 @@ import { ProductionCheckoutPage } from './pages/ProductionCheckoutPage';
 import { ProductionConfirmationPage } from './pages/ProductionConfirmationPage';
 import { ProductionManageBookingPage } from './pages/ProductionManageBookingPage';
 import { AboutPage } from './pages/AboutPage';
+import { InquiryPage } from './pages/InquiryPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 
 const AdminShell = lazy(() => import('./components/AdminShell').then((module) => ({ default: module.AdminShell })));
 const AdminCommandPage = lazy(() => import('./pages/AdminCommandPage').then((module) => ({ default: module.AdminCommandPage })));
 const AdminFrontDeskPage = lazy(() => import('./pages/AdminFrontDeskPage').then((module) => ({ default: module.AdminFrontDeskPage })));
+const AdminInquiriesPage = lazy(() => import('./pages/AdminInquiriesPage').then((module) => ({ default: module.AdminInquiriesPage })));
 const AdminHousekeepingPage = lazy(() => import('./pages/AdminHousekeepingPage').then((module) => ({ default: module.AdminHousekeepingPage })));
 const AdminMaintenancePage = lazy(() => import('./pages/AdminMaintenancePage').then((module) => ({ default: module.AdminMaintenancePage })));
 const AdminFoliosPage = lazy(() => import('./pages/AdminFoliosPage').then((module) => ({ default: module.AdminFoliosPage })));
@@ -48,11 +50,13 @@ createRoot(rootElement).render(
             <Route path="/confirmation/:code" element={<ProductionConfirmationPage />} />
             <Route path="/manage/:code" element={<ProductionManageBookingPage />} />
             <Route path="/about" element={<AboutPage />} />
+            <Route path="/p/:propertySlug/inquire" element={<InquiryPage />} />
             <Route path="/admin/login" element={<Suspense fallback={<p className="p-8">Loading staff sign-in…</p>}><AdminLoginPage /></Suspense>} />
             <Route path="/admin" element={<Suspense fallback={<p className="p-8">Loading staff console…</p>}><AdminShell /></Suspense>}>
               <Route index element={<Navigate to="/admin/command" replace />} />
               <Route path="command" element={<Suspense fallback={loading('Loading command center…')}><AdminCommandPage /></Suspense>} />
               <Route path="front-desk" element={<Suspense fallback={loading('Loading front desk…')}><AdminFrontDeskPage /></Suspense>} />
+              <Route path="inquiries" element={<Suspense fallback={loading('Loading inquiries…')}><AdminInquiriesPage /></Suspense>} />
               <Route path="housekeeping" element={<Suspense fallback={loading('Loading housekeeping…')}><AdminHousekeepingPage /></Suspense>} />
               <Route path="maintenance" element={<Suspense fallback={loading('Loading maintenance…')}><AdminMaintenancePage /></Suspense>} />
               <Route path="folios" element={<Suspense fallback={loading('Loading folios…')}><AdminFoliosPage /></Suspense>} />

@@ -64,6 +64,7 @@ export function UnitTypePage() {
   );
 
   const createHold = useMutation(api.bookings.createHold);
+  const markBookingStarted = useMutation(api.inquiries.markBookingStarted);
   const navigate = useNavigate();
 
   // A night is disabled in the picker only if EVERY unit is blocked that
@@ -174,6 +175,14 @@ export function UnitTypePage() {
     setSubmitting(true);
     setSubmitError(null);
     try {
+      const pendingInquiryId = window.localStorage.getItem('magrify.pending.inquiry');
+      if (pendingInquiryId) {
+        try {
+          await markBookingStarted({ inquiryId: pendingInquiryId as never });
+        } catch {
+          // Recovery tracking must never prevent a guest from booking.
+        }
+      }
       const result = await createHold({
         unitId: availableUnitId,
         ratePlanId: ratePlan.ratePlanId,
@@ -192,6 +201,7 @@ export function UnitTypePage() {
           .map(([addOnId, quantity]) => ({ addOnId: addOnId as Id<'addOns'>, quantity })),
         promoCode: promoActive && appliedPromo ? appliedPromo : undefined,
       });
+      window.localStorage.removeItem('magrify.pending.inquiry');
       navigate(checkoutPath(result.bookingId, result.confirmationCode));
     } catch (error) {
       setSubmitError(extractErrorMessage(error));

@@ -17,7 +17,7 @@ export function AppLayout() {
           <Link to="/" className="flex items-center gap-2 text-stone-900">
             <Mountain className="h-6 w-6 text-emerald-700" strokeWidth={2} aria-hidden="true" />
             <span className="font-display text-lg font-semibold">Magrify</span>
-            <span className="hidden rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-emerald-800 sm:inline">Consensus Commons</span>
+            <span className="hidden rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-emerald-800 sm:inline">Direct booking</span>
           </Link>
           <nav className="flex items-center gap-3 text-sm">
             {PUBLIC_SHOWCASE.enabled ? (

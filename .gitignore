@@ -12,6 +12,11 @@ docs/.vitepress/dist/
 .env.local
 .env.*.local
 *.log
+agent-orchestrator/*.sqlite3
+agent-orchestrator/.env*
+agent-orchestrator/.pytest_cache/
+agent-orchestrator/**/__pycache__/
+.playwright-cli/
 .DS_Store
 public/wavewalletdk/*
 !public/wavewalletdk/README.md

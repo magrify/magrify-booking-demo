@@ -324,6 +324,11 @@ export const createHold = mutation({
       createdAt: now,
       updatedAt: now,
     });
+    await ctx.scheduler.runAfter(0, internal.inquiries.attachBooking, {
+      propertyId: unit.propertyId,
+      bookingId,
+      normalizedEmail,
+    });
     if (promoDoc) {
       // Reserve the redemption; confirm flips it to 'applied', expiry/cancel
       // release it and give the usage slot back.
@@ -1211,6 +1216,8 @@ export const confirmFromPayment = internalMutation({
         bookingId: booking._id,
         kind: 'confirmation',
       });
+      await ctx.scheduler.runAfter(0, internal.inquiries.markConverted, { bookingId: booking._id });
+      await ctx.scheduler.runAfter(0, internal.inquiryAdapters.trackBookingCompleted, { bookingId: booking._id });
       await ctx.scheduler.runAfter(0, (internal as any).consensusReceipts.ensureForBooking, { bookingId: booking._id });
       return { outcome: 'confirmed' };
     }
@@ -1304,6 +1311,8 @@ export const confirmFromPayment = internalMutation({
         bookingId: booking._id,
         kind: 'confirmation',
       });
+      await ctx.scheduler.runAfter(0, internal.inquiries.markConverted, { bookingId: booking._id });
+      await ctx.scheduler.runAfter(0, internal.inquiryAdapters.trackBookingCompleted, { bookingId: booking._id });
       await ctx.scheduler.runAfter(0, (internal as any).consensusReceipts.ensureForBooking, { bookingId: booking._id });
       return { outcome: 'confirmed' };
     }

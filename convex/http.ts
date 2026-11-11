@@ -4,8 +4,13 @@ import { internal } from './_generated/api';
 import { auth } from './auth';
 import { bridgeBearerAuthorized, configuredBridgeToken } from './wavelength';
 import { mailBridgeAuthorized } from './emailDelivery';
+import { handle as handleVoiceBooking } from './voiceBooking';
+import { handle as handleVoiceKnowledge } from './voiceKnowledge';
 
 const http = httpRouter();
+
+http.route({ path: '/agent/booking', method: 'POST', handler: handleVoiceBooking });
+http.route({ path: '/agent/knowledge', method: 'POST', handler: handleVoiceKnowledge });
 
 // Convex Auth endpoints (staff sign-in token plumbing — /.well-known/*, /api/auth/*).
 auth.addHttpRoutes(http);

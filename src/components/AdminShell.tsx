@@ -11,6 +11,7 @@ import {
   Gauge,
   Sparkles,
   MessageSquareText,
+  Inbox,
   ReceiptText,
   RefreshCw,
   Search,
@@ -46,6 +47,7 @@ const NAV_GROUPS = [
     items: [
       { to: '/admin/command', label: 'Command center', icon: Gauge },
       { to: '/admin/front-desk', label: 'Front desk', icon: BedDouble },
+      { to: '/admin/inquiries', label: 'Inquiries', icon: Inbox },
       { to: '/admin/housekeeping', label: 'Housekeeping', icon: Sparkles },
       { to: '/admin/maintenance', label: 'Maintenance', icon: Wrench },
       ...(import.meta.env.VITE_MAGRIFY_PROFILE === 'production'

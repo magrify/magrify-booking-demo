@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as agentOrchestrator from "../agentOrchestrator.js";
 import type * as apiKeys from "../apiKeys.js";
 import type * as apiV1 from "../apiV1.js";
 import type * as auth from "../auth.js";
@@ -39,6 +40,8 @@ import type * as housekeepingWork from "../housekeepingWork.js";
 import type * as http from "../http.js";
 import type * as ical from "../ical.js";
 import type * as icalImport from "../icalImport.js";
+import type * as inquiries from "../inquiries.js";
+import type * as inquiryAdapters from "../inquiryAdapters.js";
 import type * as messages from "../messages.js";
 import type * as operationalFlags from "../operationalFlags.js";
 import type * as operationalSearch from "../operationalSearch.js";
@@ -62,6 +65,8 @@ import type * as seed from "../seed.js";
 import type * as staff from "../staff.js";
 import type * as treasury from "../treasury.js";
 import type * as treasuryPolicy from "../treasuryPolicy.js";
+import type * as voiceBooking from "../voiceBooking.js";
+import type * as voiceKnowledge from "../voiceKnowledge.js";
 import type * as wavelength from "../wavelength.js";
 import type * as wavelengthRewards from "../wavelengthRewards.js";
 
@@ -72,6 +77,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  agentOrchestrator: typeof agentOrchestrator;
   apiKeys: typeof apiKeys;
   apiV1: typeof apiV1;
   auth: typeof auth;
@@ -103,6 +109,8 @@ declare const fullApi: ApiFromModules<{
   http: typeof http;
   ical: typeof ical;
   icalImport: typeof icalImport;
+  inquiries: typeof inquiries;
+  inquiryAdapters: typeof inquiryAdapters;
   messages: typeof messages;
   operationalFlags: typeof operationalFlags;
   operationalSearch: typeof operationalSearch;
@@ -126,6 +134,8 @@ declare const fullApi: ApiFromModules<{
   staff: typeof staff;
   treasury: typeof treasury;
   treasuryPolicy: typeof treasuryPolicy;
+  voiceBooking: typeof voiceBooking;
+  voiceKnowledge: typeof voiceKnowledge;
   wavelength: typeof wavelength;
   wavelengthRewards: typeof wavelengthRewards;
 }>;
