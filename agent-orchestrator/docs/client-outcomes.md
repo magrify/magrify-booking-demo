@@ -11,6 +11,9 @@ as deployment evidence, not invented case-study metrics.
   experience.
 - Evidence boundary: no conversion, revenue, or traffic metric is asserted here
   without a report exported from the client's analytics system.
+- Stakeholder metrics to collect next: booking CTA clicks, availability checks,
+  inquiry-to-booking conversion, abandoned checkout recovery, and response time
+  from guest inquiry to staff handoff.
 
 ## Bancal SF
 
@@ -20,6 +23,9 @@ as deployment evidence, not invented case-study metrics.
   experience.
 - Evidence boundary: no lead, revenue, or occupancy metric is asserted here
   without a report exported from the client's analytics system.
+- Stakeholder metrics to collect next: inquiry submissions, qualified inquiry
+  rate, response time, staff handoff completion, listing engagement, and repeat
+  contact volume.
 
 ## How this maps to the operator workflow
 
