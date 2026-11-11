@@ -82,6 +82,7 @@ def build_openai_agent(name: str, instructions: str, tools: list[Any] | None = N
 
 def build_deep_research_agent(model: str, tools: list[Any] | None = None) -> Any:
     from deepagents import create_deep_agent
+    from .deepagents_tools import default_deepagents_tools
 
-    return create_deep_agent(model=model, tools=tools or [], system_prompt="Research carefully, cite evidence in the run record, and stop before external side effects.")
+    return create_deep_agent(model=model, tools=tools if tools is not None else default_deepagents_tools(), system_prompt="Research carefully, cite evidence in the run record, and stop before external side effects.")
 

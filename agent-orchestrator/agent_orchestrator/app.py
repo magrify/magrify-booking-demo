@@ -15,6 +15,8 @@ from .store import Store
 from .workflows import build_workflow
 from .enrichment_worker import process_payload
 from .evaluations import evaluate_workflow_state
+from .prompt_eval import optimize_prompt_context
+from .search_adapters import file_search
 
 try:
     import aiosqlite
@@ -92,11 +94,65 @@ class Handler(BaseHTTPRequestHandler):
             results = store.search_knowledge(query.get("tenant_id", [""])[0], query.get("namespace", [""])[0], query.get("q", [""])[0], int(query.get("limit", [5])[0]))
             self._json(200, {"results": results})
             return
+        if parsed.path == "/v1/knowledge/vector-search":
+            query = parse_qs(parsed.query)
+            tenant_id = query.get("tenant_id", [""])[0]
+            validate_tenant_id(tenant_id)
+            results = store.search_knowledge_vector(
+                tenant_id,
+                query.get("namespace", [""])[0],
+                query.get("q", [""])[0],
+                int(query.get("limit", [5])[0]),
+            )
+            self._json(200, {"retrieval": "vector", "results": results})
+            return
+        if parsed.path == "/v1/knowledge/file-search":
+            query = parse_qs(parsed.query)
+            tenant_id = query.get("tenant_id", [""])[0]
+            validate_tenant_id(tenant_id)
+            root = os.getenv("AGENT_FILE_SEARCH_ROOT")
+            if not root:
+                self._json(503, {"detail": "AGENT_FILE_SEARCH_ROOT is not configured"})
+                return
+            results = file_search(root, tenant_id, query.get("q", [""])[0], limit=int(query.get("limit", [5])[0]))
+            self._json(200, {"retrieval": "file_search", "results": results})
+            return
         if parsed.path == "/v1/reports/nightly":
             query = parse_qs(parsed.query)
             tenant_id = query.get("tenant_id", ["magrify-default"])[0]
             validate_tenant_id(tenant_id)
             self._json(200, store.nightly_report(tenant_id))
+            return
+        if parsed.path == "/v1/monitoring/reliability":
+            query = parse_qs(parsed.query)
+            tenant_id = query.get("tenant_id", ["magrify-default"])[0]
+            validate_tenant_id(tenant_id)
+            try:
+                window_hours = int(query.get("window_hours", [24])[0])
+            except ValueError:
+                self._json(400, {"detail": "window_hours must be an integer"})
+                return
+            self._json(200, store.reliability_report(tenant_id, window_hours=window_hours))
+            return
+        if parsed.path == "/v1/monitoring/adoption":
+            query = parse_qs(parsed.query)
+            tenant_id = query.get("tenant_id", ["magrify-default"])[0]
+            validate_tenant_id(tenant_id)
+            try:
+                window_hours = int(query.get("window_hours", [24])[0])
+            except ValueError:
+                self._json(400, {"detail": "window_hours must be an integer"})
+                return
+            self._json(200, store.adoption_report(tenant_id, window_hours=window_hours))
+            return
+        if parsed.path == "/v1/evals/prompt-context":
+            query = parse_qs(parsed.query)
+            try:
+                iterations = int(query.get("iterations", [3])[0])
+            except ValueError:
+                self._json(400, {"detail": "iterations must be an integer"})
+                return
+            self._json(200, optimize_prompt_context(iterations=iterations))
             return
         self._json(404, {"detail": "Not found"})
 
@@ -183,6 +239,7 @@ class Handler(BaseHTTPRequestHandler):
             store.event(run_id, "agent_eval", evaluation)
             output["evaluation"] = evaluation
             store.finish_run(run_id, status=str(state.get("status", "completed")), output=output)
+            store.event(run_id, "workflow_state", {"status": state.get("status"), "action": state.get("action"), "runtime": state.get("runtime")})
             store.event(run_id, "run_completed", {"status": state.get("status"), "context_count": len(state.get("context", []))})
             self._json(200, {"run_id": run_id, **output})
             return
@@ -210,6 +267,7 @@ class Handler(BaseHTTPRequestHandler):
                         store.event(run_id, "agent_eval", evaluation)
                         output["evaluation"] = evaluation
                         store.finish_run(run_id, status=str(state.get("status", "approved")), output=output)
+                        store.event(run_id, "workflow_state", {"status": state.get("status"), "action": state.get("action"), "runtime": state.get("runtime")})
                         store.event(run_id, "approval_resumed", {"status": state.get("status"), "action": state.get("action")})
                         self._json(200, {"run_id": run_id, "approval_status": "approved", "status": state.get("status"), "action": state.get("action"), "output": output})
                         return
@@ -226,6 +284,24 @@ class Handler(BaseHTTPRequestHandler):
                 self._json(404, {"detail": "Run not found"})
                 return
             self._json(200, {"eval_id": eval_id, "run_id": payload["run_id"]})
+            return
+        if parsed.path == "/v1/monitoring/adoption/events":
+            tenant_id = str(payload.get("tenant_id", ""))
+            event_name = str(payload.get("event", ""))
+            validate_tenant_id(tenant_id)
+            allowed = {
+                "operator_feedback",
+                "demo_presented",
+                "operator_signoff",
+                "deployment_configured",
+                "staff_training_completed",
+                "staff_workflow_used",
+            }
+            if event_name not in allowed:
+                self._json(400, {"detail": "unsupported adoption event"})
+                return
+            store.tenant_event(tenant_id, event_name, {"actor_role": payload.get("actor_role"), "metadata": payload.get("metadata", {})}, run_id=str(payload.get("run_id", "")))
+            self._json(201, {"tenant_id": tenant_id, "event": event_name})
             return
         if parsed.path == "/v1/knowledge":
             doc_id = store.add_knowledge(str(payload["tenant_id"]), str(payload["namespace"]), str(payload["title"]), str(payload["content"]), list(payload.get("tags", [])))

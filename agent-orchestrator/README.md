@@ -20,6 +20,35 @@ the same service token.
 confirmation, recovery, failure, and attributed-revenue totals for operations
 reporting.
 
+`GET /v1/monitoring/reliability?tenant_id=...&window_hours=24` returns the
+observed operating view for the selected tenant: completion and failure rates,
+stalled approvals, approval-resume rate, retry failures, recovery-due runs, and
+the underlying event counts. It reads the durable run/event ledger, so the
+report is empty until the deployed workflow receives real traffic. The booking
+graph also records a `workflow_state` event for every completed or approval-
+resumed run, making the post-launch observation path explicit.
+
+`python scripts/run-reliability-load-test.py --runs 100` exercises the same
+tenant-scoped event ledger with bounded concurrent validation traffic. It
+intentionally produces confirmed, failed, and awaiting-approval cases so the
+monitoring math can be checked under contention before a deployment receives
+real traffic. Its output is labeled `synthetic_validation`; it is not a
+production reliability claim.
+
+`GET /v1/evals/prompt-context?iterations=3` runs the deterministic prompt and
+context optimization loop. It compares a baseline prompt with a tenant- and
+property-scoped prompt on fixed cancellation and amenity cases, reports the
+mean score and improvement, and selects the best variant. This is a repeatable
+training-style loop for prompt/context changes; it does not claim model-weight
+training or send guest data to a provider.
+
+The search adapters also expose concrete retrieval patterns for interviews:
+`GET /v1/knowledge/vector-search` runs a small tenant-filtered local vector
+index over structured knowledge rows, while `GET /v1/knowledge/file-search`
+searches only bounded, tenant-specific Markdown, text, JSON, and CSV files when
+`AGENT_FILE_SEARCH_ROOT` is configured. Both adapters are optional and keep
+the existing vectorless path intact.
+
 The service defaults to a safe dry-run when no provider key is configured. It
 never sends outbound messages, publishes content, charges cards, or mutates a
 booking without an explicit approval token from the calling product.
@@ -68,6 +97,13 @@ Set `ENABLE_DEEPAGENTS=true` with `DEEPAGENTS_MODEL` and a server-side provider
 key to run the read-only Deep Agents research memo during enrichment. Without
 those credentials the graph remains fully functional and records that the
 optional research pass is not configured.
+
+The Deep Agents pass now has two concrete read-only tools: bounded workspace
+file search and lead-record inspection. It can plan a research job, inspect
+tenant-scoped evidence, and return a memo without sending outreach, publishing
+content, or changing CRM state. The tools are isolated in
+`agent_orchestrator/deepagents_tools.py` so they can be replaced by a hosted
+file-search provider later.
 
 The CartelBot Worker emits privacy-safe PostHog-compatible events for run
 starts, enrichment, approval decisions, and CRM stage changes when the
@@ -132,3 +168,49 @@ directly with `MAGRIFY_CONVEX_HTTP_URL` and `MAGRIFY_LIVEKIT_TOKEN`; the bridge
 delegates to the same availability query and hold mutation as the guest UI.
 Deploying to LiveKit Cloud still requires linking a LiveKit project and
 configuring a SIP trunk/phone number.
+
+## Verified end-to-end booking evidence
+
+The approval-resume smoke test verifies the failure mode that matters most in
+the booking path: an approval decision resumes the same LangGraph thread from
+its saved SQLite checkpoint instead of only changing a status label. The test
+then follows the checkout handoff through the `checkout.session.completed`
+webhook acknowledgment and checks that a confirmation is persisted. It is a
+test booking, not a claim of customer-scale traffic or a bank-side payment
+decision.
+
+After launch, operators can use the reliability endpoint to watch the same
+workflow in production. The first signals are observed run volume, confirmed
+completion rate, failed runs, stalled approvals, approval-resume rate, retry
+failures, recovery-due runs, and the last event timestamp. The service keeps
+these measurements tenant-scoped and redacts guest PII before writing events.
+
+## Operator-driven product scope
+
+The initial operator request was an example booking experience for one property
+with client branding and property-specific inventory. That request exposed a
+product tradeoff: a one-off mockup would demonstrate the screen but would not be
+reusable for the next operator, while a shared catalog would risk leaking or
+mixing property data. The shipped direction keeps the branded guest pages and
+React/TypeScript booking workflow, but moves inventory, policies, payment
+settings, staff access, and guest workflows behind tenant-scoped configuration.
+The demo is therefore an acceptance artifact for the operator-facing path and
+the reusable deployment is the follow-on implementation path; the repository
+does not claim operator sign-off or staff adoption until those events are
+recorded by the client deployment.
+
+`POST /v1/monitoring/adoption/events` records the next engagement milestones:
+`operator_feedback`, `demo_presented`, `operator_signoff`,
+`deployment_configured`, `staff_training_completed`, and
+`staff_workflow_used`. `GET /v1/monitoring/adoption` reports which milestones
+are actually observed, so the repo distinguishes a shipped demo from real
+adoption instead of implying sign-off.
+
+## Banking-controls sandbox
+
+`agent_orchestrator/banking_controls.py` demonstrates a lender-package review
+workflow using the same approval-first posture: it checks for a rent roll,
+operating statement, inspection report, and insurance; routes missing documents
+or exceptions to the appropriate human reviewer; and explicitly records that no
+credit decision or regulatory filing was made by the agent. This is a technical
+readiness sandbox, not a claim of prior bank-side credit authority.

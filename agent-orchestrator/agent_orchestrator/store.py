@@ -5,10 +5,11 @@ import os
 import sqlite3
 import threading
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from .data_controls import redact
+from .search_adapters import vector_search
 
 
 def utc_now() -> str:
@@ -116,6 +117,14 @@ class Store:
         with self._lock, self._connect() as db:
             db.execute("INSERT INTO events(id, run_id, tenant_id, name, payload_json, created_at) VALUES(?,?,?,?,?,?)", (f"evt_{uuid.uuid4().hex}", run_id, run["tenant_id"], name, json.dumps(redact(payload)), utc_now()))
 
+    def tenant_event(self, tenant_id: str, name: str, payload: dict[str, Any], *, run_id: str = "") -> None:
+        """Record an adoption/operations event that is not tied to a run."""
+        with self._lock, self._connect() as db:
+            db.execute(
+                "INSERT INTO events(id, run_id, tenant_id, name, payload_json, created_at) VALUES(?,?,?,?,?,?)",
+                (f"evt_{uuid.uuid4().hex}", run_id, tenant_id, name, json.dumps(redact(payload)), utc_now()),
+            )
+
     def list_events(self, run_id: str) -> list[dict[str, Any]]:
         with self._connect() as db:
             rows = db.execute("SELECT id, name, payload_json, created_at FROM events WHERE run_id=? ORDER BY created_at", (run_id,)).fetchall()
@@ -165,6 +174,92 @@ class Store:
                 totals["revenue_cents"] += int(revenue["amount_cents"])
         return {"tenant_id": tenant_id, "window": "24h", **totals}
 
+    def reliability_report(self, tenant_id: str, *, window_hours: int = 24) -> dict[str, Any]:
+        """Return privacy-safe operating metrics for a tenant's live runs.
+
+        This intentionally reads the same run/event ledger used by the
+        workflow API. It is not a synthetic health check: every count comes
+        from an observed request, approval decision, retry, recovery, or
+        confirmation in the selected window.
+        """
+        bounded_hours = min(max(int(window_hours), 1), 24 * 30)
+        window_start = (datetime.now(timezone.utc) - timedelta(hours=bounded_hours)).isoformat()
+        with self._connect() as db:
+            runs = db.execute(
+                "SELECT id, status, approval_required, created_at, updated_at FROM runs WHERE tenant_id=? AND created_at>=? ORDER BY created_at",
+                (tenant_id, window_start),
+            ).fetchall()
+            events = db.execute(
+                "SELECT run_id, name, payload_json, created_at FROM events WHERE tenant_id=? AND created_at>=? ORDER BY created_at",
+                (tenant_id, window_start),
+            ).fetchall()
+
+        event_counts: dict[str, int] = {}
+        for row in events:
+            event_counts[row["name"]] = event_counts.get(row["name"], 0) + 1
+
+        total_runs = len(runs)
+        confirmed = sum(1 for row in runs if row["status"] == "confirmed")
+        failed = sum(1 for row in runs if row["status"] == "failed")
+        recovery_due = sum(1 for row in runs if row["status"] == "recovery_due")
+        awaiting_approval = sum(1 for row in runs if row["status"] == "awaiting_approval")
+        approval_decisions = event_counts.get("approval_decision", 0)
+        approval_resumed = event_counts.get("approval_resumed", 0)
+        attempt_failures = event_counts.get("run_attempt_failed", 0)
+        attempt_successes = event_counts.get("run_attempt_succeeded", 0)
+
+        return {
+            "tenant_id": tenant_id,
+            "window_hours": bounded_hours,
+            "observed_runs": total_runs,
+            "confirmed_runs": confirmed,
+            "failed_runs": failed,
+            "recovery_due_runs": recovery_due,
+            "awaiting_approval_runs": awaiting_approval,
+            "completion_rate": round(confirmed / total_runs, 4) if total_runs else None,
+            "failure_rate": round(failed / total_runs, 4) if total_runs else None,
+            "stalled_approval_rate": round(awaiting_approval / total_runs, 4) if total_runs else None,
+            "approval_decisions": approval_decisions,
+            "approval_resumed": approval_resumed,
+            "approval_resume_rate": round(approval_resumed / approval_decisions, 4) if approval_decisions else None,
+            "attempt_failures": attempt_failures,
+            "attempt_successes": attempt_successes,
+            "event_counts": event_counts,
+            "last_event_at": events[-1]["created_at"] if events else None,
+            "last_run_at": runs[-1]["updated_at"] if runs else None,
+        }
+
+    def adoption_report(self, tenant_id: str, *, window_hours: int = 24) -> dict[str, Any]:
+        """Summarize operator and staff adoption events for a deployment."""
+        bounded_hours = min(max(int(window_hours), 1), 24 * 30)
+        window_start = (datetime.now(timezone.utc) - timedelta(hours=bounded_hours)).isoformat()
+        with self._connect() as db:
+            rows = db.execute(
+                "SELECT name, payload_json, created_at FROM events WHERE tenant_id=? AND created_at>=? ORDER BY created_at",
+                (tenant_id, window_start),
+            ).fetchall()
+        adoption_names = {
+            "operator_feedback",
+            "demo_presented",
+            "operator_signoff",
+            "deployment_configured",
+            "staff_training_completed",
+            "staff_workflow_used",
+        }
+        events = [row for row in rows if row["name"] in adoption_names]
+        counts: dict[str, int] = {}
+        for row in events:
+            counts[row["name"]] = counts.get(row["name"], 0) + 1
+        return {
+            "tenant_id": tenant_id,
+            "window_hours": bounded_hours,
+            "event_counts": counts,
+            "observed_adoption_events": len(events),
+            "signoff_recorded": bool(counts.get("operator_signoff")),
+            "staff_usage_recorded": bool(counts.get("staff_workflow_used")),
+            "last_adoption_event_at": events[-1]["created_at"] if events else None,
+        }
+
     def add_knowledge(self, tenant_id: str, namespace: str, title: str, content: str, tags: list[str]) -> str:
         doc_id = f"doc_{uuid.uuid4().hex}"
         with self._lock, self._connect() as db:
@@ -181,3 +276,13 @@ class Store:
             scored.append((sum(1 for term in terms if term in haystack), row))
         scored.sort(key=lambda item: item[0], reverse=True)
         return [{"id": row["id"], "title": row["title"], "content": row["content"], "tags": json.loads(row["tags_json"]), "score": score} for score, row in scored[:limit] if score > 0]
+
+    def search_knowledge_vector(self, tenant_id: str, namespace: str, query: str, limit: int = 5) -> list[dict[str, Any]]:
+        """Run optional local vector RAG after tenant and namespace filtering."""
+        with self._connect() as db:
+            rows = db.execute("SELECT * FROM knowledge WHERE tenant_id=? AND namespace=? ORDER BY created_at DESC", (tenant_id, namespace)).fetchall()
+        documents = [
+            {"id": row["id"], "title": row["title"], "content": row["content"], "tags": json.loads(row["tags_json"])}
+            for row in rows
+        ]
+        return vector_search(documents, query, limit=limit)
