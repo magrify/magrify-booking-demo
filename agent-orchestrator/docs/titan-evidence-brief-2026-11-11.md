@@ -34,6 +34,35 @@ observed runs, confirmed completions, failures, stalled approvals, retries,
 recovery, and last-seen timestamps. A live-traffic denominator requires a
 tenant export after guests or callers use the deployment.
 
+### What the validation predicts for customer traffic
+
+The validation is deliberately shaped like the customer path (availability →
+hold → approval → payment handoff → confirmation), so it tests the failure
+boundaries that would otherwise turn into abandoned bookings or unworked
+inquiries. It does **not** turn the rehearsal counts into production traffic.
+The supported operational inference is:
+
+- Resuming the same saved checkpoint should reduce lost approvals and duplicate
+  guest work, which is expected to improve approval-to-confirmation completion
+  and reduce abandoned checkouts.
+- Recording stalls, retries, recovery, and handoff time should let staff find
+  stuck work instead of discovering it from a guest complaint, which is
+  expected to reduce time-to-recovery and time-to-human handoff.
+- Tenant/property guards and the quality rubric should reduce wrong-property
+  answers and unsafe tool calls, which is expected to improve qualified-inquiry
+  quality and protect booking accuracy.
+- The Haiku/Sonnet comparison gives a cost/latency routing decision: use the
+  less expensive model for bounded classification when it passes the rubric and
+  reserve the stronger model for cases that need more reasoning. The expected
+  business effect is lower cost and faster first response without relaxing the
+  same property-isolation checks.
+
+The metrics to verify in a real tenant export are approval-to-confirmation rate,
+abandoned-checkout recovery, time to human handoff, wrong-property correction
+rate, qualified-inquiry rate, median response latency, and cost per completed
+inquiry. Those are the customer outcomes this validation is designed to move;
+the repository does not claim observed production deltas without the export.
+
 ## Applied AI — model cost/quality evidence
 
 `scripts/run-model-comparison.py` made the smallest authorized live-provider

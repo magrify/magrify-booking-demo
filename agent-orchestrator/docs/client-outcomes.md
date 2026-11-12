@@ -46,3 +46,22 @@ direction, and adopted the deployed experience in day-to-day guest or property
 inquiry work. The repository keeps the sign-off and adoption event capture
 available so deployments can record the approving role, conditions, first
 observed use, and real traffic totals without fabricating metrics.
+
+## Product decision and expected operational change
+
+The approving stakeholders were the client owners/CEO-level leaders for the two
+engagements. Their shared tradeoff was speed to a branded experience versus a
+workflow staff could safely reuse. Magrify kept the branded React/TypeScript
+surface, but moved inventory, policies, payments, records, and staff actions
+behind tenant configuration rather than hard-coding one client.
+
+That decision changes the operator's day-to-day path in a concrete way: staff
+can work from one shared availability/inquiry flow, preserve the handoff and
+approval state, and reuse the same operating pattern as the property or service
+changes. For Aguas de Ibiza, the expected metric movement is more direct
+availability-to-booking completion, fewer abandoned checkout recoveries, and
+faster guest-to-staff handoff. For Bancal SF, the expected movement is a higher
+qualified-inquiry rate, faster response and routing, and fewer repeated contacts
+to reconstruct a prospect's consultation or onboarding status. These are
+expected outcomes tied to the accepted workflow—not observed numeric deltas;
+tenant analytics or CRM exports are required to quantify them.
